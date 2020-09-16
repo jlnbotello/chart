@@ -13,8 +13,38 @@
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
+  <canvas baseChart 
+  [datasets]="chartData" 
+  [labels]="chartLabels" 
+  [options]="chartOptions" 
+  [colors]="chartColors"
+  [legend]="showLegend" 
+  [chartType]="chartType">
+  </canvas>
+  <canvas baseChart 
+  [datasets]="chartData" 
+  [labels]="chartLabels" 
+  [options]="chartOptions" 
+  [colors]="chartColors"
+  [legend]="showLegend" 
+  [chartType]="chartType">
+  </canvas>
+  <canvas baseChart 
+  [datasets]="chartData" 
+  [labels]="chartLabels" 
+  [options]="chartOptions" 
+  [colors]="chartColors"
+  [legend]="showLegend" 
+  [chartType]="chartType">
+  </canvas>
+
+
+  <ion-button (click)="start()"  fill="clear" shape="round">
+    START
+  </ion-button>
+  <ion-button (click)="stop()" fill="clear" shape="round">
+    STOP
+  </ion-button>
+
+
 </ion-content>

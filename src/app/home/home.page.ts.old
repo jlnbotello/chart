@@ -1,0 +1,167 @@
+import { Component, ViewChild } from '@angular/core';
+
+import { ChartDataSets, ChartOptions, Point } from 'chart.js';
+import { BaseChartDirective, Color, Label } from 'ng2-charts'; // ng2-charts is an Angular wrapper around Chart.js library.
+import { Subscription } from 'rxjs';
+
+import { DataPoint } from '../model/DataPoint';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
+})
+export class HomePage {
+
+  private xAxisMin: number = 0;
+  private xAxisMax: number = 10;
+  private xAxisMaxPoints: number = 100;
+  private yAxisMin: number = -5;
+  private yAxisMax: number = 5;
+  private index: number = 0;
+  
+  private signalName: string = "My signal";
+  private samplingPeriod: number = 0.1;
+  
+  
+  private dataPointSubscription$: Subscription;
+
+  private chartData: ChartDataSets[] = [{ data: [], label: this.signalName, fill: false },{ data: [], label: this.signalName, fill: false , pointRadius: 5}];
+  private chartLabels = [];
+  private chartOptions: ChartOptions = {
+ 
+    animation: {
+      duration: 0
+    },
+    elements: {
+      point: {
+        radius: 1  
+      }
+    },
+    responsive: true,
+    scales: {
+      xAxes: [{
+        type: 'linear',
+        ticks: { min: 0, max: 11, stepSize: 1,
+          //autoSkip: true,
+        //maxTicksLimit: 20
+        }
+      }],
+      gridLines: {
+        display: true,
+        color: 'rgba(200, 200, 200, 1)'
+      },
+      
+      
+    }
+  }/*,
+    {}
+    {
+      elements: {
+        point: {
+          radius: 5 
+        }
+      },
+      scales: {
+        xAxes: [{
+          type: 'linear',
+          ticks: { min: 0, max: 10, stepSize: 1, }
+        }],
+      }
+    }];*/
+  
+  
+  private chartType = "line"
+  private showLegend = false;
+  private interval;
+
+  private chartColors: Color[] = [
+    {
+      borderColor: '#FFFFFF',
+      backgroundColor: '#ff00ff'
+    },
+    {
+      borderColor: '#FF0000',
+      backgroundColor: '#ff00ff'
+    }
+  ];
+  private counter = 0;
+
+  @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
+  constructor() {
+    //this.chartLabels = ["0", "1", "2", "3", "4", "5","6", "7", "8", "9", "10"];
+    //this.chartData[1].data = [{ x:1,y:2}];
+    this.xAxisMaxPoints = this.xAxisMax * 1/this.samplingPeriod;
+    //for (let i = 0; i < this.xAxisMaxPoints; i++){
+      //this.chartLabels[i] = this.samplingPeriod * i;
+    //}
+    //this.chartLabels = Array.apply(null, { length: 100 }).map(() => { return this.counter+=0.001;});
+  }
+
+
+  ngOnDestroy() {
+    this.dataPointSubscription$.unsubscribe();
+  }
+
+  start() {
+    let time = 0;
+    this.interval = setInterval(() => {
+      time += this.samplingPeriod;
+      let value = Math.sin(2 * Math.PI * 2 * time)+Math.random();
+      let point = new DataPoint(time, value);
+      this.addNewPoint(point);
+      if (time >= 10)
+        time = 0;
+    }, this.samplingPeriod*1000);
+  }
+  stop() {
+    clearInterval(this.interval);
+  }
+
+  private pushEventToChartData(dataPoint: DataPoint): void {
+
+    if (this.isChartDataFull(this.chartData, 100)) {
+      this.removeLastElementFromChartDataAndLabel();
+    }
+    this.chartData[0].data.push(dataPoint.value);
+    this.chartLabels.push(this.getLabel(dataPoint));
+  }
+
+  private getLabel(point: DataPoint): string {
+    return ""+ point.timestamp;
+  }
+
+  private removeLastElementFromChartDataAndLabel(): void {
+    this.chartData[0].data = this.chartData[0].data.slice(1);
+    this.chartLabels = this.chartLabels.slice(1);
+  }
+  private isChartDataFull(chartData: ChartDataSets[], limit: number): boolean {
+    return chartData[0].data.length >= limit;
+  }
+
+
+  private addNewPoint(point: DataPoint) {
+    let p: Point = {x:point.timestamp,y:point.value};
+    this.chartData[0].data[this.index] = p;
+    this.chartData[1].data[0] = p;
+    if (this.index%10 == 0)
+      this.chart.update();
+    console.log(point.timestamp,point.value);
+
+    this.index++;
+    if (this.index == this.xAxisMaxPoints) {
+      this.index = 0;
+      this.chartData[0].data=this.chartData[0].data.slice(50);
+      this.chart.update();
+      this.stop();
+    } 
+
+
+
+  }
+
+
+
+  
+
+}
